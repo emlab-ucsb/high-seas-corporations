@@ -1,0 +1,81 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(naniar)
+library(bigrquery)
+library(DBI)
+library(sf)
+library(lubridate)
+library(here)
+
+DIR_GCS_data <- "~/gcs/spatial-datasets"
+```
+
+# Set BQ connection
+
+```{r}
+BQ_connection <-  dbConnect(bigquery(), 
+                            project = 'world-fishing-827',
+                            billing = "world-fishing-827", 
+                            use_legacy_sql = FALSE) 
+
+HS_vessels <- read_csv(here("data", "01_raw","HS_fishing_vessels.csv"))
+
+```
+
+
+```{r}
+HS_binned_effort_sql <- glue::glue_sql("WITH
+  --------------------------------------------------------
+  -- Use a slightly more agressive filter for good segments
+  --------------------------------------------------------
+  good_segments AS (
+  SELECT
+    seg_id
+  FROM
+    `gfw_research.pipe_v20190502_segs`
+  WHERE
+    good_seg
+    AND positions > 10
+    AND NOT overlapping_and_short ),
+  -----------------
+  -- raw position data
+  ----------------
+  position_table AS (
+  SELECT
+    *
+  FROM
+    `gfw_research.pipe_v20190502_fishing` 
+  WHERE
+    date BETWEEN TIMESTAMP('2018-01-01')
+    AND TIMESTAMP('2018-12-31')
+    AND ARRAY_LENGTH(regions.eez) = 0
+    AND seg_id IN (SELECT seg_id FROM good_segments))
+  --------------------------------------------------
+  -- Bin the activity by a tenth of a degree, and group
+  -- by vessel class. Also include fishing hours and
+  -- just hours that vessels were present.
+  -------------------------------------------------
+SELECT
+  FLOOR(lat/0.1)*0.1 + 0.5*.1 lat_bin,
+  FLOOR(lon/0.1)*0.1 + 0.5*.1 lon_bin,
+  SUM(hours) hours,
+  SUM(IF (nnet_score > .5, hours, 0)) fishing_hours,
+  ssvid
+FROM
+  position_table
+WHERE ssvid in ({ssvid_of_interest*})
+GROUP BY
+  lat_bin,
+  lon_bin,
+  ssvid",
+ ssvid_of_interest = as.character(pull(HS_vessels, ssvid)),
+  .con = BQ_connection)
+
+HS_binned_effort <- dbGetQuery(BQ_connection, HS_binned_effort_sql)
+```

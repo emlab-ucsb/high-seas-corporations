@@ -1,0 +1,91 @@
+---
+title: "Match with corporate ownership"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(naniar)
+library(bigrquery)
+library(DBI)
+library(sf)
+library(lubridate)
+library(here)
+
+DIR_GCS_data <- "~/gcs/spatial-datasets"
+```
+
+```{r}
+HS_vessels <- read_csv(here("data", "01_raw","HS_fishing_vessels.csv"))
+
+HS_reefers_and_bunkers <- read_csv(here("data", "01_raw", "HS_reefers_and_bunkers.csv"))
+
+vessels_corp_data <- readxl::read_xlsx(here("data", "02_processed","corp_info_HS_fishing_vessels.xlsx")) %>% 
+  janitor::clean_names() %>% 
+  select(ssvid = mmsi, owner, owner_source, corporate_actor, corporate_actor_source, main_company, main_company_flag, 
+         subsidiaries_and_affiliates, main_company_and_subsidiaries_source, remarks)
+
+reefers_corp_data <- readxl::read_xlsx(here("data", "02_processed", "corp_info_HS_reefers_and_bunkers.xlsx")) %>% 
+  janitor::clean_names() %>% 
+  select(ssvid, owner, owner_source, corporate_actor, corporate_actor_source, main_company, main_company_flag, 
+         subsidiaries_and_affiliates, main_company_and_subsidiaries_source, remarks)
+```
+
+# Match with corporate actors info
+
+## Fishing vessels
+
+```{r}
+HS_vessels <- HS_vessels %>% 
+  left_join(vessels_corp_data ) %>% 
+  replace_with_na_all(condition = ~.x == "n/a")
+
+HS_vessels %>% 
+  summarize(n_vessels = n(),
+            f_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
+            f_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
+            f_vessels_no_idea = sum(is.na(corporate_actor) & is.na(gfw_owner))/n_vessels) %>% 
+  mutate_if(is.numeric, round, 2)
+```
+
+```{r}
+HS_vessels %>% 
+  summarize(HS_effort = sum(fishing_hours_HS),
+            f_HS_effort_with_corp_actor = sum(fishing_hours_HS[!is.na(corporate_actor)])/HS_effort,
+            f_HS_effort_with_owner = sum(fishing_hours_HS[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
+            f_HS_effort_with_no_idea = sum(fishing_hours_HS[is.na(corporate_actor) & is.na(gfw_owner)])/HS_effort,
+            ) %>% 
+  mutate_if(is.numeric, round, 2)
+```
+
+## Reefers and bunkers
+
+```{r}
+HS_reefers_and_bunkers <- HS_reefers_and_bunkers %>% 
+  left_join(reefers_corp_data ) %>% 
+  replace_with_na_all(condition = ~.x == "n/a") 
+
+HS_reefers_and_bunkers %>% 
+  summarize(n_vessels = n(),
+            n_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
+            n_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
+            n_vessels_no_idea = sum(is.na(corporate_actor) & is.na(gfw_owner))/n_vessels)
+```
+
+```{r}
+HS_reefers_and_bunkers %>% 
+  summarize(HS_effort = sum(HS_encounters),
+            HS_effort_with_corp_actor = sum(HS_encounters[!is.na(corporate_actor)])/HS_effort,
+            HS_effort_with_owner = sum(HS_encounters[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
+            HS_effort_with_no_idea = sum(HS_encounters[is.na(corporate_actor) & is.na(gfw_owner)])/HS_effort,
+            )
+```
+
+```{r}
+write_csv(HS_reefers_and_bunkers, 
+          here("data", "03_output", "HS_reefers_and_bunker_with_corp_actors.csv"))
+
+write_csv(HS_vessels, 
+          here("data", "03_output", "HS_fishing_vessels_with_corp_actors.csv"))
+```
+
