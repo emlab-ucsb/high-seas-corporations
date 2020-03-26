@@ -1,6 +1,8 @@
 ---
 title: "High Seas Corporate Ownership Analysis"
-output: html_notebook
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 ```{r}
