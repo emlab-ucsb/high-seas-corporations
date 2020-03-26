@@ -1,9 +1,7 @@
----
-title: "R Notebook"
-output: github_document
----
+R Notebook
+================
 
-```{r, message = F}
+``` r
 library(tidyverse)
 library(naniar)
 library(bigrquery)
@@ -15,23 +13,20 @@ library(here)
 DIR_GCS_data <- "~/gcs/spatial-datasets"
 
 knitr::opts_chunk$set(comment=NA, message = F)
-
 ```
 
 # Set BQ connection
 
-```{r}
+``` r
 BQ_connection <-  dbConnect(bigquery(), 
                             project = 'world-fishing-827',
                             billing = "world-fishing-827", 
                             use_legacy_sql = FALSE) 
 
 HS_vessels <- read_csv(here("data", "01_raw","HS_fishing_vessels.csv"))
-
 ```
 
-
-```{r}
+``` r
 HS_binned_effort_sql <- glue::glue_sql("WITH
   --------------------------------------------------------
   -- Use a slightly more agressive filter for good segments
@@ -81,3 +76,12 @@ GROUP BY
 
 HS_binned_effort <- dbGetQuery(BQ_connection, HS_binned_effort_sql)
 ```
+
+    Warning in class(obj) <- c("scalar", class(obj)): Setting class(x) to multiple
+    strings ("scalar", "SQL", ...); result will no longer be an S4 object
+
+    Using an auto-discovered, cached token.
+    To suppress this message, modify your code or options to clearly consent to the use of a cached token.
+    See gargle's "Non-interactive auth" vignette for more details:
+    https://gargle.r-lib.org/articles/non-interactive-auth.html
+    The bigrquery package is using a cached token for js.mayorga368@gmail.com.

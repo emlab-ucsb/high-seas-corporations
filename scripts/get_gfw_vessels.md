@@ -1,9 +1,7 @@
----
-title: "High Seas Corporate Ownership Analysis"
-output: github_document
----
+High Seas Corporate Ownership Analysis
+================
 
-```{r, message = F}
+``` r
 library(tidyverse)
 library(naniar)
 library(bigrquery)
@@ -20,7 +18,7 @@ DIR_GCS_data <- "~/gcs/spatial-datasets"
 
 # Set BQ connection
 
-```{r}
+``` r
 BQ_connection <-  dbConnect(bigquery(), 
                             project = 'world-fishing-827',
                             billing = "world-fishing-827", 
@@ -29,11 +27,13 @@ BQ_connection <-  dbConnect(bigquery(),
 
 # Get 2018 data from GFW
 
-## Fishing vessels: activity and vessels characteristics 
+## Fishing vessels: activity and vessels characteristics
 
-The following query obtains the identify, characteristics, and fishing effort for those vessels that spent at least 5% of their fishing acitity in areas beyond national jurisdiction in 2018
+The following query obtains the identify, characteristics, and fishing
+effort for those vessels that spent at least 5% of their fishing acitity
+in areas beyond national jurisdiction in 2018
 
-```{sql, connection = "BQ_connection", output.var = "HS_vessels"}
+``` sql
 WITH
   --------------------------------------------------------
   -- Use a slightly more agressive filter for good segments
@@ -163,7 +163,7 @@ having fishing_hours_HS > 0 and fishing_hours > 0 and fishing_hours_HS/fishing_h
 
 ## Reefers and Bunkers
 
-```{sql, connection = "BQ_connection", output.var = "encounters"}
+``` sql
 WITH
   --------------------
   -- Get encounters
@@ -469,7 +469,7 @@ FROM
 
 ### Mask high seas encounters
 
-```{r}
+``` r
 eez_and_land <- sf::read_sf(file.path(DIR_GCS_data, 
                                       "marine_regions_eez_with_land", 
                                       "EEZ_land_v2_201410.shp"))
@@ -477,7 +477,12 @@ eez_and_land <- sf::read_sf(file.path(DIR_GCS_data,
 encounters_sf <- st_as_sf(encounters, coords = c("lon_mean", "lat_mean"), crs = st_crs(eez_and_land))
 
 encounters_sf <- st_join(encounters_sf, eez_and_land)
+```
 
+    Warning in st_is_longlat(x): bounding box has potentially an invalid value range
+    for longlat data
+
+``` r
 HS_reefers_and_bunkers <- encounters_sf %>% 
   sf::st_set_geometry(NULL) %>%
   group_by(carrier_ssvid) %>% 
@@ -487,7 +492,7 @@ HS_reefers_and_bunkers <- encounters_sf %>%
   mutate(fraction_encounters_in_HS = round(HS_encounters/all_encounters, 2))
 ```
 
-```{r}
+``` r
 sfc_as_cols <- function(x, names = c("x","y")) {
   stopifnot(inherits(x,"sf") && inherits(sf::st_geometry(x),"sfc_POINT"))
   ret <- sf::st_coordinates(x)
@@ -510,7 +515,7 @@ write_csv(high_seas_encounters,
 
 ### Get carrier/bunker info
 
-```{r}
+``` r
 reefers_info_sql <- glue::glue_sql("SELECT
   CAST(identity.ssvid AS STRING) AS mmsi,
   identity.n_callsign AS callsign,
@@ -536,7 +541,10 @@ WHERE
 HS_reefers_and_bunkers_info <- dbGetQuery(BQ_connection, reefers_info_sql)
 ```
 
-```{r}
+    Warning in class(obj) <- c("scalar", class(obj)): Setting class(x) to multiple
+    strings ("scalar", "SQL", ...); result will no longer be an S4 object
+
+``` r
 Mode <- function(x) {
   ux <- unique(na.omit(x))
   ux[which.max(tabulate(match(x, ux)))]
@@ -554,7 +562,7 @@ HS_reefers_and_bunkers <- HS_reefers_and_bunkers %>%
 
 ## Ownership data
 
-```{r}
+``` r
 ownership_sql <- glue::glue_sql(
   "
   SELECT
@@ -578,7 +586,10 @@ WHERE
 gfw_ownership_info <- dbGetQuery(BQ_connection, ownership_sql)
 ```
 
-```{r}
+    Warning in class(obj) <- c("scalar", class(obj)): Setting class(x) to multiple
+    strings ("scalar", "SQL", ...); result will no longer be an S4 object
+
+``` r
 gfw_ownership_info <- gfw_ownership_info %>% 
   filter(!(owner_address == "UNKNOWN." & is.na(owner))) 
 
@@ -590,8 +601,7 @@ gfw_ownership_info <- gfw_ownership_info %>%
             gfw_owner_flag = Mode(owner_flag))
 ```
 
-
-```{r}
+``` r
 HS_vessels <- HS_vessels %>% 
   left_join(gfw_ownership_info) %>% 
   mutate_if(is.numeric, round, 2) 
