@@ -155,21 +155,27 @@ HS_vessels <- HS_vessels %>%
 ## Joining, by = "ssvid"
 ```
 
+What % of fishing vessels can we assign corporate actors or ownership?
+
+
 ```r
 HS_vessels %>% 
   summarize(n_vessels = n(),
             f_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
             f_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
             f_vessels_no_idea = sum(is.na(corporate_actor) & is.na(gfw_owner))/n_vessels) %>% 
-  mutate_if(is.numeric, round, 2)
+  mutate_if(is.numeric, round, 2) %>% 
+    knitr::kable()
 ```
 
-```
-## # A tibble: 1 x 4
-##   n_vessels f_vessels_with_corp_actor f_vessels_with_owner f_vessels_no_idea
-##       <dbl>                     <dbl>                <dbl>             <dbl>
-## 1      3590                      0.72                 0.83              0.17
-```
+
+
+ n_vessels   f_vessels_with_corp_actor   f_vessels_with_owner   f_vessels_no_idea
+----------  --------------------------  ---------------------  ------------------
+      3590                        0.72                   0.83                0.17
+
+
+To what % of fishing effort can we assign corporate actors or ownership?
 
 
 ```r
@@ -179,17 +185,20 @@ HS_vessels %>%
             f_HS_effort_with_owner = sum(fishing_hours_HS[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
             f_HS_effort_with_no_idea = sum(fishing_hours_HS[is.na(corporate_actor) & is.na(gfw_owner)])/HS_effort,
             ) %>% 
-  mutate_if(is.numeric, round, 2)
+  mutate_if(is.numeric, round, 2) %>% 
+    knitr::kable()
 ```
 
-```
-## # A tibble: 1 x 4
-##   HS_effort f_HS_effort_with_corp_a… f_HS_effort_with_own… f_HS_effort_with_no_…
-##       <dbl>                    <dbl>                 <dbl>                 <dbl>
-## 1  6884670.                     0.76                  0.89                  0.11
-```
+
+
+ HS_effort   f_HS_effort_with_corp_actor   f_HS_effort_with_owner   f_HS_effort_with_no_idea
+----------  ----------------------------  -----------------------  -------------------------
+   6884670                          0.76                     0.89                       0.11
 
 ## Reefers and bunkers
+
+What % of reefer and bunker can we assign corporate actors or ownership?
+
 
 
 ```r
@@ -207,32 +216,35 @@ HS_reefers_and_bunkers %>%
   summarize(n_vessels = n(),
             n_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
             n_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
-            n_vessels_no_idea = sum(is.na(corporate_actor) & is.na(gfw_owner))/n_vessels)
+            n_vessels_no_idea = sum(is.na(corporate_actor) & is.na(gfw_owner))/n_vessels) %>% 
+  mutate_if(is.numeric, round, 2) %>% 
+  knitr::kable()
 ```
 
-```
-## # A tibble: 1 x 4
-##   n_vessels n_vessels_with_corp_actor n_vessels_with_owner n_vessels_no_idea
-##       <int>                     <dbl>                <dbl>             <dbl>
-## 1       194                     0.634                0.974            0.0258
-```
+
+
+ n_vessels   n_vessels_with_corp_actor   n_vessels_with_owner   n_vessels_no_idea
+----------  --------------------------  ---------------------  ------------------
+       194                        0.63                   0.97                0.03
+
+What % of encounters can we assign corporate actors or ownership?
 
 
 ```r
 HS_reefers_and_bunkers %>% 
-  summarize(HS_effort = sum(HS_encounters),
-            HS_effort_with_corp_actor = sum(HS_encounters[!is.na(corporate_actor)])/HS_effort,
-            HS_effort_with_owner = sum(HS_encounters[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
-            HS_effort_with_no_idea = sum(HS_encounters[is.na(corporate_actor) & is.na(gfw_owner)])/HS_effort,
-            )
+  summarize(HS_encounters = sum(HS_encounters),
+            HS_encounters_with_corp_actor = sum(HS_encounters[!is.na(corporate_actor)])/HS_encounters,
+            HS_encounters_with_owner = sum(HS_encounters[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_encounters,
+            HS_encounters_with_no_idea = sum(HS_encounters[is.na(corporate_actor) & is.na(gfw_owner)])/HS_encounters) %>% 
+  mutate_if(is.numeric, round, 2) %>%
+  knitr::kable()
 ```
 
-```
-## # A tibble: 1 x 4
-##   HS_effort HS_effort_with_corp_actor HS_effort_with_owner HS_effort_with_no_id…
-##       <dbl>                     <dbl>                <dbl>                 <dbl>
-## 1      4752                     0.766                0.990               0.00989
-```
+
+
+ HS_encounters   HS_encounters_with_corp_actor   HS_encounters_with_owner   HS_encounters_with_no_idea
+--------------  ------------------------------  -------------------------  ---------------------------
+          4752                              NA                         NA                           NA
 
 
 ```r

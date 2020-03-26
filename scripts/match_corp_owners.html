@@ -450,30 +450,63 @@ reefers_corp_data &lt;- readxl::read_xlsx(here(&quot;data&quot;, &quot;02_proces
   left_join(vessels_corp_data ) %&gt;% 
   replace_with_na_all(condition = ~.x == &quot;n/a&quot;)</code></pre>
 <pre><code>## Joining, by = &quot;ssvid&quot;</code></pre>
+<p>What % of fishing vessels can we assign corporate actors or ownership?</p>
 <pre class="r"><code>HS_vessels %&gt;% 
   summarize(n_vessels = n(),
             f_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
             f_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
             f_vessels_no_idea = sum(is.na(corporate_actor) &amp; is.na(gfw_owner))/n_vessels) %&gt;% 
-  mutate_if(is.numeric, round, 2)</code></pre>
-<pre><code>## # A tibble: 1 x 4
-##   n_vessels f_vessels_with_corp_actor f_vessels_with_owner f_vessels_no_idea
-##       &lt;dbl&gt;                     &lt;dbl&gt;                &lt;dbl&gt;             &lt;dbl&gt;
-## 1      3590                      0.72                 0.83              0.17</code></pre>
+  mutate_if(is.numeric, round, 2) %&gt;% 
+    knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">n_vessels</th>
+<th align="right">f_vessels_with_corp_actor</th>
+<th align="right">f_vessels_with_owner</th>
+<th align="right">f_vessels_no_idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">3590</td>
+<td align="right">0.72</td>
+<td align="right">0.83</td>
+<td align="right">0.17</td>
+</tr>
+</tbody>
+</table>
+<p>To what % of fishing effort can we assign corporate actors or ownership?</p>
 <pre class="r"><code>HS_vessels %&gt;% 
   summarize(HS_effort = sum(fishing_hours_HS),
             f_HS_effort_with_corp_actor = sum(fishing_hours_HS[!is.na(corporate_actor)])/HS_effort,
             f_HS_effort_with_owner = sum(fishing_hours_HS[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
             f_HS_effort_with_no_idea = sum(fishing_hours_HS[is.na(corporate_actor) &amp; is.na(gfw_owner)])/HS_effort,
             ) %&gt;% 
-  mutate_if(is.numeric, round, 2)</code></pre>
-<pre><code>## # A tibble: 1 x 4
-##   HS_effort f_HS_effort_with_corp_a… f_HS_effort_with_own… f_HS_effort_with_no_…
-##       &lt;dbl&gt;                    &lt;dbl&gt;                 &lt;dbl&gt;                 &lt;dbl&gt;
-## 1  6884670.                     0.76                  0.89                  0.11</code></pre>
+  mutate_if(is.numeric, round, 2) %&gt;% 
+    knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">HS_effort</th>
+<th align="right">f_HS_effort_with_corp_actor</th>
+<th align="right">f_HS_effort_with_owner</th>
+<th align="right">f_HS_effort_with_no_idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">6884670</td>
+<td align="right">0.76</td>
+<td align="right">0.89</td>
+<td align="right">0.11</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="reefers-and-bunkers" class="section level2">
 <h2>Reefers and bunkers</h2>
+<p>What % of reefer and bunker can we assign corporate actors or ownership?</p>
 <pre class="r"><code>HS_reefers_and_bunkers &lt;- HS_reefers_and_bunkers %&gt;% 
   left_join(reefers_corp_data ) %&gt;% 
   replace_with_na_all(condition = ~.x == &quot;n/a&quot;) </code></pre>
@@ -482,21 +515,53 @@ reefers_corp_data &lt;- readxl::read_xlsx(here(&quot;data&quot;, &quot;02_proces
   summarize(n_vessels = n(),
             n_vessels_with_corp_actor = sum(!is.na(corporate_actor))/n_vessels,
             n_vessels_with_owner = sum(!is.na(corporate_actor) | !is.na(gfw_owner))/n_vessels,
-            n_vessels_no_idea = sum(is.na(corporate_actor) &amp; is.na(gfw_owner))/n_vessels)</code></pre>
-<pre><code>## # A tibble: 1 x 4
-##   n_vessels n_vessels_with_corp_actor n_vessels_with_owner n_vessels_no_idea
-##       &lt;int&gt;                     &lt;dbl&gt;                &lt;dbl&gt;             &lt;dbl&gt;
-## 1       194                     0.634                0.974            0.0258</code></pre>
+            n_vessels_no_idea = sum(is.na(corporate_actor) &amp; is.na(gfw_owner))/n_vessels) %&gt;% 
+  mutate_if(is.numeric, round, 2) %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">n_vessels</th>
+<th align="right">n_vessels_with_corp_actor</th>
+<th align="right">n_vessels_with_owner</th>
+<th align="right">n_vessels_no_idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">194</td>
+<td align="right">0.63</td>
+<td align="right">0.97</td>
+<td align="right">0.03</td>
+</tr>
+</tbody>
+</table>
+<p>What % of encounters can we assign corporate actors or ownership?</p>
 <pre class="r"><code>HS_reefers_and_bunkers %&gt;% 
-  summarize(HS_effort = sum(HS_encounters),
-            HS_effort_with_corp_actor = sum(HS_encounters[!is.na(corporate_actor)])/HS_effort,
-            HS_effort_with_owner = sum(HS_encounters[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_effort,
-            HS_effort_with_no_idea = sum(HS_encounters[is.na(corporate_actor) &amp; is.na(gfw_owner)])/HS_effort,
-            )</code></pre>
-<pre><code>## # A tibble: 1 x 4
-##   HS_effort HS_effort_with_corp_actor HS_effort_with_owner HS_effort_with_no_id…
-##       &lt;dbl&gt;                     &lt;dbl&gt;                &lt;dbl&gt;                 &lt;dbl&gt;
-## 1      4752                     0.766                0.990               0.00989</code></pre>
+  summarize(HS_encounters = sum(HS_encounters),
+            HS_encounters_with_corp_actor = sum(HS_encounters[!is.na(corporate_actor)])/HS_encounters,
+            HS_encounters_with_owner = sum(HS_encounters[!is.na(corporate_actor) | !is.na(gfw_owner)])/HS_encounters,
+            HS_encounters_with_no_idea = sum(HS_encounters[is.na(corporate_actor) &amp; is.na(gfw_owner)])/HS_encounters) %&gt;% 
+  mutate_if(is.numeric, round, 2) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">HS_encounters</th>
+<th align="right">HS_encounters_with_corp_actor</th>
+<th align="right">HS_encounters_with_owner</th>
+<th align="right">HS_encounters_with_no_idea</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">4752</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code>write_csv(HS_reefers_and_bunkers, 
           here(&quot;data&quot;, &quot;03_output&quot;, &quot;HS_reefers_and_bunker_with_corp_actors.csv&quot;))
 
