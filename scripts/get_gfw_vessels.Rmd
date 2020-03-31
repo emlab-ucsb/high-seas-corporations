@@ -42,7 +42,7 @@ WITH
   SELECT
     seg_id
   FROM
-    `world-fishing-827.gfw_research.pipe_production_v20190502_segs` 
+    `world-fishing-827.gfw_research.pipe_v20190502_segs` 
   WHERE
     good_seg
     AND positions > 10
@@ -76,7 +76,7 @@ WITH
     ssvid,
     SUM( positions) positions
   FROM
-    `world-fishing-827.gfw_research.pipe_production_v20190502_segs`
+    `world-fishing-827.gfw_research.pipe_v20190502_segs`
   WHERE
     ((dist_avg_pos_sat_vessel_km > 3000 AND sat_positions_known > 5) )
     AND first_timestamp < TIMESTAMP("2018-12-31")
@@ -120,7 +120,7 @@ WITH
     distinct ssvid, hours, timestamp, nnet_score,
     if(array_length(regions.eez)>0,true,false) in_eez
   FROM
-    `gfw_research.pipe_production_v20190502_fishing`
+    `gfw_research.pipe_v20190502_fishing`
   WHERE
     timestamp BETWEEN TIMESTAMP("2018-01-01")
     AND TIMESTAMP("2018-12-31")

@@ -55,7 +55,7 @@ HS_vessels %>%
 
 | n\_vessels | f\_with\_corp\_actor | f\_with\_owner | f\_no\_idea |
 | ---------: | -------------------: | -------------: | ----------: |
-|       3590 |                 0.72 |           0.83 |        0.17 |
+|       3584 |                 0.72 |           0.83 |        0.17 |
 
 To what % of fishing effort can we assign corporate actors or ownership?
 
@@ -72,7 +72,7 @@ HS_vessels %>%
 
 | HS\_effort\_in\_hrs | f\_with\_corp\_actor | f\_with\_owner | f\_no\_idea |
 | ------------------: | -------------------: | -------------: | ----------: |
-|             6884670 |                 0.76 |           0.89 |        0.11 |
+|             6881246 |                 0.76 |           0.89 |        0.11 |
 
 ## Reefers and bunkers
 
